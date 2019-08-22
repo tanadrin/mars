@@ -43,6 +43,7 @@ class Location:
         self.lat,self.long=geometry.latlong(self.theta,self.phi)
         self.get_rho()
         self.get_rgb()
+    # Generates a location from spherical point data
     def loc_from_point2(self,name,rho,theta,phi):
         self.name = name
         self.rho,self.theta,self.phi=rho,theta,phi
@@ -63,16 +64,22 @@ class Location:
         self.stereox,self.stereoy = self.stereo()
         self.get_rho()
         self.get_rgb()
+    # Stores stereographic projection of the location's cartesian coordinates
     def stereo(self):
         return geometry.stereo_points([[self.x,self.y,self.z]])[0]
+    # Adjusts the radius of the point based on the elevation of a corresponding
+    # coordinate on the heightmap image provided.
     def get_rho(self):
         img_x,img_y = geometry.latlong_to_xy(self.theta,self.phi,hmap_x,hmap_y)
         self.v=heightmap.getpixel((img_x,img_y))
-        self.rho = (self.v/255)*0.1+1
+        self.rho = (self.v/255)*0.1+1 # magic number, fix later
         self.x,self.y,self.z=geometry.sphere_to_cart(self.rho,self.theta,self.phi)
+    # Gets the color we want to use for the location based on the RGB value
+    # of the pixel at the corresponding coordinate of the colormap provided.
     def get_rgb(self):
         img_x,img_y = geometry.latlong_to_xy(self.theta,self.phi,hmap_x,hmap_y)
         self.c=colormap.getpixel((img_x,img_y))
+    # Stores color data in a way that's easy to pass to OpenGL.
     def set_coldata(self):
         coldata = []
         i = len(self.vertices)
@@ -80,7 +87,9 @@ class Location:
             for k in self.c:
                 coldata.append(k)
         self.coldata = tuple(coldata)
-        
+
+# Class for storing and getting information about the whole set of locations a
+# little more easily.        
 class LocationList:
     def __init__(self,locationfile = None, pointlist = None):
         self.locations = []
@@ -98,11 +107,14 @@ class LocationList:
                 self.locations.append(loc)
         else:
             raise ValueError('Specify either a list of locations via file OR a list of points, but not both')
+    # Returns a list of points corresponding to the 3D coordinates of each
+    # location
     def sphere_points(self):
         sphere_points = []
         for location in self.locations:
             sphere_points.append([location.x,location.y,location.z])
         return sphere_points
+    # Same but for points on the stereographic projection.
     def stereo_points(self):
         stereo_points = []
         for location in self.locations:

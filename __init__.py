@@ -6,20 +6,12 @@ import numpy
 import common
 from pyglet.gl import *
 
-global z,m,camera_set
-n=2000
-z=200
-w=500
-m=True
+global camera_set # used for camera initialization
+n=200 # Number of locations to generate
+w=500 # 1/2 viewport width
 camera_set = None
 
 game_window = pyglet.window.Window(2*w,2*w)
-location_list = common.LocationList(pointlist=geometry.spiral_points2(n))
-points = location_list.sphere_points()
-stereo_points = location_list.stereo_points()
-d_points, simplices = geometry.stereo_delaunay(stereo_points)
-location_list.build_graph(points,simplices)   
-pyglet.graphics.glEnable(pyglet.graphics.GL_DEPTH_TEST)
 
 def draw_locs(locs,game_window):
     game_window.clear()
@@ -67,5 +59,11 @@ def on_resize(width,height):
     return pyglet.event.EVENT_HANDLED
         
 if __name__ == '__main__':
+    pyglet.graphics.glEnable(pyglet.graphics.GL_DEPTH_TEST)
+    location_list = common.LocationList(pointlist=geometry.spiral_points2(n))
+    points = location_list.sphere_points()
+    stereo_points = location_list.stereo_points()
+    d_points, simplices = geometry.stereo_delaunay(stereo_points)
+    location_list.build_graph(points,simplices)   
     pyglet.app.run()
     
