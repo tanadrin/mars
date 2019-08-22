@@ -82,9 +82,9 @@ class Location:
         img_x,img_y = geometry.latlong_to_xy(self.theta,self.phi,hmap_x,hmap_y)
         self.c=colormap.getpixel((img_x,img_y))
     # Stores color data in a way that's easy to pass to OpenGL.
-    def set_coldata(self):
+    def set_coldata(self,length):
         coldata = []
-        i = len(self.vertices)
+        i = length
         for j in range(0,i):
             for k in self.c:
                 coldata.append(k)
@@ -165,4 +165,4 @@ class LocationList:
                     pd.append(value)
             location.pd = tuple(pd)
             location.pdl = len(location.pd)//3
-            location.set_coldata()
+            location.set_coldata(len(location.vertices))

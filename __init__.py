@@ -14,13 +14,10 @@ camera_set = None
 
 game_window = pyglet.window.Window(2*w,2*w)
 
+
 def draw_loc(loc,loc_batch):
     pyglet.graphics.draw(loc.pdl,pyglet.gl.GL_POLYGON,('v3f',loc.pd),('c3B',loc.coldata))
-
-class ProvinceGroup(pyglet.graphics.Group):
-    def set_state(self):
-        pass
-    
+       
 @game_window.event
 def on_draw():
     global camera_set
@@ -30,12 +27,13 @@ def on_draw():
         glPushMatrix()
         camera_set = 1
     game_window.clear()
-    loc_batch = pyglet.graphics.Batch()
-    g=pyglet.graphics.Group()
     
     for loc in location_list.locations:
-        loc_batch.add(loc.pdl,pyglet.gl.GL_TRIANGLE_FAN, g,('v3f',loc.pd),('c3B',loc.coldata))
-    loc_batch.draw()
+        #batch1.add(loc.pdl,pyglet.gl.GL_POLYGON, provs,('v3f',loc.pd),('c3B',loc.coldata))
+        draw_loc(loc,batch1)
+        
+            
+    #batch1.draw()
 
 @game_window.event    
 def on_key_press(key,modifiers):
@@ -66,11 +64,16 @@ def on_resize(width,height):
     return pyglet.event.EVENT_HANDLED
         
 if __name__ == '__main__':
-    pyglet.graphics.glEnable(pyglet.graphics.GL_DEPTH_TEST)
+    glEnable(pyglet.graphics.GL_DEPTH_TEST)
+    
     location_list = common.LocationList(pointlist=geometry.spiral_points2(n))
     points = location_list.sphere_points()
     stereo_points = location_list.stereo_points()
     delaunay = scipy.spatial.Delaunay(stereo_points)
-    location_list.build_graph(points,delaunay)   
+    location_list.build_graph(points,delaunay) 
+    
+    batch1 = pyglet.graphics.Batch()
+    provs = pyglet.graphics.OrderedGroup(0)
+    
     pyglet.app.run()
     
