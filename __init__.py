@@ -8,19 +8,19 @@ from pyglet.gl import *
 import scipy
 
 global camera_set # used for camera initialization
-n=30000 # Number of locations to generate
+n=3000 # Number of locations to generate
 w=500 # 1/2 viewport width
 camera_set = None
 
 game_window = pyglet.window.Window(2*w,2*w)
 
-def draw_locs(locs,game_window):
-    game_window.clear()
-    for loc in locs:
-        a,b,c = loc.x,loc.y,loc.z
-        pdl = len(loc.pd)//3
-        pyglet.graphics.draw(pdl,pyglet.gl.GL_POLYGON,('v3f',loc.pd),('c3B',loc.coldata))
-       
+def draw_loc(loc,loc_batch):
+    pyglet.graphics.draw(loc.pdl,pyglet.gl.GL_POLYGON,('v3f',loc.pd),('c3B',loc.coldata))
+
+class ProvinceGroup(pyglet.graphics.Group):
+    def set_state(self):
+        pass
+    
 @game_window.event
 def on_draw():
     global camera_set
@@ -29,7 +29,13 @@ def on_draw():
         glRotatef(90,1,0,0)
         glPushMatrix()
         camera_set = 1
-    draw_locs(location_list.locations,game_window)
+    game_window.clear()
+    loc_batch = pyglet.graphics.Batch()
+    g=pyglet.graphics.Group()
+    
+    for loc in location_list.locations:
+        loc_batch.add(loc.pdl,pyglet.gl.GL_TRIANGLE_FAN, g,('v3f',loc.pd),('c3B',loc.coldata))
+    loc_batch.draw()
 
 @game_window.event    
 def on_key_press(key,modifiers):

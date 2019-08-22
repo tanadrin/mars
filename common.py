@@ -33,6 +33,7 @@ class Location:
         self.vertices = []
         self.pd = None # Flattened array of vertex values for use w Pyglet
         self.coldata = None # Tuple used to render color of loc w Pyglet
+        self.pdl = None
     # Generates location from cartesian point data
     def loc_from_point(self,name,x,y,z):
         self.name = name
@@ -163,4 +164,5 @@ class LocationList:
                 for value in vertex:
                     pd.append(value)
             location.pd = tuple(pd)
+            location.pdl = len(location.pd)//3
             location.set_coldata()
