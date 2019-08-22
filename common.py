@@ -5,6 +5,7 @@ from math import cos
 from geometry import pi
 from PIL import Image
 import itertools
+import numpy
 
 hmap_x = 2048
 hmap_y = 1024
@@ -123,33 +124,37 @@ class LocationList:
         
     # Find the neighbor of each point and the Voronoi region associated w/ each point,
     # and order the vertices of the Voronoi region so that they render correctly w/ OpenGL.
-    def build_graph(self,points,simplices):
-        print('Building graph.')
+    def build_graph(self,points,delaunay):
+        
+        indices,indptr=delaunay.vertex_neighbor_vertices # Scipy docs: Neighboring vertices of vertices.
+        # Tuple of two ndarrays of int: (indices, indptr). The indices of neighboring vertices of vertex 
+        # k are indptr[indices[k]:indices[k+1]].
+
         for location in self.locations:
+        
             location.index = self.locations.index(location)
-            # This can take a while if the number of points is greater than a few hundred;
-            # need to find ways of speeding this up.
-            if location.index%100 == 0:
-                print('Point '+str(location.index))
-            neighbor_indices = []
-            simplex_centroids = []
-            # Search each simplex for the occurence of the index of the point we're using
-            # for reference; if the simplex has that point in it, the other vertices of that
-            # simplex are neighbor points, and the centroid of that simplex is one of the Voronoi
-            # region vertices we're interested in. (Technically it should be the circumcenter,
-            # not the centroid, but the centroid is a. easier to compute and b. looks nicer.)
-            for simplex in simplices:
-                if location.index in simplex:
-                    simplex_centroids.append(geometry.get_centroid(points,simplex))
-                    for index in simplex:
-                        if index != location.index:
-                            neighbor_indices.append(index)
-                            
-            # Orders the points counterclockwise around the centroid of the region.
-            location.vertices = geometry.order_points_3d(simplex_centroids)
             
-            for index in neighbor_indices:
-                location.neighbors.append(self.locations[index])
+            # Each neighbor point for the location
+            location.neighbors = indptr[indices[location.index]:indices[location.index+1]]
+            
+            # Get the actual values of the neighbor points, then sort them by rotation around
+            # the reference point; this will mean the vertexes we calculate in the next step
+            # will already be in order.
+            neighbor_points = []
+            for i in location.neighbors:
+                neighbor_points.append(points[i])
+            sorted_neighbors = geometry.order_points_3d(neighbor_points)
+            
+            # The Voronoi region vertices are the same as the centroids of the set of triangles
+            # touching each vertex.
+            centroids = []
+            for j in range(0,len(sorted_neighbors)):
+                p1 = sorted_neighbors[j]
+                p2 = sorted_neighbors[(j+1)%len(sorted_neighbors)]
+                centroid = geometry.get_centroid2([points[location.index],p1,p2])
+                centroids.append(centroid)
+                
+            location.vertices = centroids
                 
             # Convert the components of the vertices into a flat tuple for use with
             # OpenGL. Will speed up rendering later.

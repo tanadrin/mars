@@ -5,9 +5,10 @@ import random
 import numpy
 import common
 from pyglet.gl import *
+import scipy
 
 global camera_set # used for camera initialization
-n=200 # Number of locations to generate
+n=30000 # Number of locations to generate
 w=500 # 1/2 viewport width
 camera_set = None
 
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     location_list = common.LocationList(pointlist=geometry.spiral_points2(n))
     points = location_list.sphere_points()
     stereo_points = location_list.stereo_points()
-    d_points, simplices = geometry.stereo_delaunay(stereo_points)
-    location_list.build_graph(points,simplices)   
+    delaunay = scipy.spatial.Delaunay(stereo_points)
+    location_list.build_graph(points,delaunay)   
     pyglet.app.run()
     

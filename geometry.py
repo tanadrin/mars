@@ -100,23 +100,6 @@ def stereo_voronoi_edges(points):
     # in the previous array forming each edge
     return vertices, edges
 
-# Returns the simplices of a 2D Delaunay triangulation of
-# a set of points; see
-# https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.spatial.Delaunay.html    
-def stereo_delaunay(points):
-    delaunay = scipy.spatial.Delaunay(points)
-    simplices = delaunay.simplices # "Indices of the points forming the
-    # simplices in the triangulation... oriented counterclockwise."
-    return points, simplices
-
-# Apparently the convex hull of points on a sphere is equivalent
-# to their Delaunay triangulation, and means there's no gap in the mesh at the
-# south pole. See section 5 at:
-# https://www.redblobgames.com/x/1842-delaunay-voronoi-sphere/
-def convex_hull(points):
-    chull = scipy.spatial.ConvexHull(points)
-    return chull.points,chull.simplices
-
 # Rotates a point x,y,z in the plane x,y around the origin 
 # by an angle given in radians
 def rotatexy(point,angle):
@@ -211,3 +194,16 @@ def order_points_3d(points):
     r_inv = numpy.linalg.inv(R) # Multiplicative inverse of R
     points.sort(key=lambda p: atan2((p*r_inv).getA1()[1]-(c*r_inv).getA1()[1],(p*r_inv).getA1()[0]-(c*r_inv).getA1()[0]))
     return points
+
+# Reorganizes a list of points, simplices where each simplex
+# is a set of indices to just a list of simplices, where each
+# simplex is a set of points.
+def simplices2(points,simplices):
+    simplices2 = []
+    for simplex in simplices:
+        simplex2 = []
+        for point in simplex:
+            simplex2.append(points[point])
+        simplex2 = tuple(simplex2)
+        simplices2.append(simplex2)
+    return simplices2
