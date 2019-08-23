@@ -28,12 +28,11 @@ def on_draw():
         camera_set = 1
     game_window.clear()
     
-    for loc in location_list.locations:
-        #batch1.add(loc.pdl,pyglet.gl.GL_POLYGON, provs,('v3f',loc.pd),('c3B',loc.coldata))
-        draw_loc(loc,batch1)
-        
-            
-    #batch1.draw()
+    province_batch = pyglet.graphics.Batch()
+    for i, loc in enumerate(location_list.locations):
+        group = pyglet.graphics.OrderedGroup(i)
+        batch1.add(loc.pdl,pyglet.gl.GL_POLYGON, group,('v3f',loc.pd),('c3B',loc.coldata))        
+    batch1.draw()
 
 @game_window.event    
 def on_key_press(key,modifiers):
@@ -71,9 +70,6 @@ if __name__ == '__main__':
     stereo_points = location_list.stereo_points()
     delaunay = scipy.spatial.Delaunay(stereo_points)
     location_list.build_graph(points,delaunay) 
-    
-    batch1 = pyglet.graphics.Batch()
-    provs = pyglet.graphics.OrderedGroup(0)
     
     pyglet.app.run()
     
